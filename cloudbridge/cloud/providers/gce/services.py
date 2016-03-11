@@ -1,4 +1,6 @@
 from cloudbridge.cloud.base.resources import ClientPagedResultList
+from cloudbridge.cloud.base.services import BaseComputeService
+from cloudbridge.cloud.base.services import BaseImageService
 from cloudbridge.cloud.base.services import BaseKeyPairService
 from cloudbridge.cloud.base.services import BaseSecurityGroupService
 from cloudbridge.cloud.base.services import BaseSecurityService
@@ -10,6 +12,7 @@ import hashlib
 from retrying import retry
 
 from .resources import GCEKeyPair
+from .resources import GCEMachineImage
 
 
 class GCESecurityService(BaseSecurityService):
@@ -185,3 +188,56 @@ class GCESecurityGroupService(BaseSecurityGroupService):
 
     def __init__(self, provider):
         super(GCESecurityGroupService, self).__init__(provider)
+
+
+class GCEComputeService(BaseComputeService):
+
+    def __init__(self, provider):
+        return
+
+
+class GCEImageService(BaseImageService):
+
+    def __init__(self, provider):
+        super(GCEImageService, self).__init__(provider)
+
+    @property
+    def gce_images(self):
+        if not self._gce_images:
+            self._gce_images = self.provider.gce_compute.images()
+        return self._gce_images
+
+    def get(self, image_id):
+        """
+        Returns an image given its image
+        image: string, Name of the image resource to return. (required)
+        """
+        try:
+            image = self.gce_images.get(project=self.provider.project_name,
+                                        image=image_id)
+            if image:
+                # TODO cast object into GCEMachineImage
+                return image
+        except Exception as e:
+            print e.message, e.args
+
+        return None
+
+    def find(self, name, limit=None, marker=None):
+        """
+        Searches for an image by a given list of attributes
+        """
+        images = self.gce_images.list(project=self.provider.project_name,
+                                      maxResults=limit, pageToken=marker)
+        results = [GCEMachineImage(self.provider, image) for image in images
+                   if name == image]
+        return results
+
+    def list(self, limit=None, marker=None):
+        """
+        List all images.
+        """
+        # TODO replace gce with self
+        images = self.gce_images.list(project=self.provider.project_name,
+                                      maxResults=limit, pageToken=marker)
+        return images

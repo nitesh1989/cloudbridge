@@ -14,6 +14,7 @@ import httplib2
 from oauth2client.client import SignedJwtAssertionCredentials
 
 from .services import GCESecurityService
+from .services import GCEComputeService
 
 
 class GCECloudProvider(BaseCloudProvider):
@@ -40,11 +41,13 @@ class GCECloudProvider(BaseCloudProvider):
 
         # Initialize provider services
         self._security = GCESecurityService(self)
+        self._compute = GCEComputeService(self)
 
     @property
     def compute(self):
-        raise NotImplementedError(
-            "GCECloudProvider does not implement this service")
+        return self._compute
+        # raise NotImplementedError(
+        # "GCECloudProvider does not implement this service")
 
     @property
     def network(self):
