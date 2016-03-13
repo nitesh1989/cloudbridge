@@ -42,3 +42,48 @@ class GCEKeyPair(BaseKeyPair):
     @material.setter
     def material(self, value):
         self._kp_material = value
+
+
+from cloudbridge.cloud.interfaces.resources import MachineImageState
+from cloudbridge.cloud.base.resources import BaseMachineImage
+
+
+class GCEMachineImage(BaseMachineImage):
+
+    IMAGE_STATE_MAP = {
+        'pending': MachineImageState.PENDING,
+        'available': MachineImageState.AVAILABLE,
+        'failed': MachineImageState.ERROR
+    }
+
+    def __init__(self, provider, image):
+        super(GCEMachineImage, self).__init__(provider)
+        if isinstance(image, GCEMachineImage):
+            self._gce_image = image._gce_image
+        else:
+            self._gce_image = image
+
+    # TODO: Properties missing in GCE -- Ask Enis/Nuwan
+    # 1. id
+    # 2. description
+    # 3. delete: Should this be deleting the image?
+    #    Shouldn't this be in GCEImageServices?
+
+    @property
+    def name(self):
+        """
+        Get the image name.
+
+        :rtype: ``str``
+        :return: Name for this image as returned by the cloud middleware.
+        """
+        return self._gce_image.name
+
+    @property
+    def delete(self):
+        """
+        Delete this self
+        """
+        self._gce_image.delete(project=self.provider.project_name,
+                               image=self._gce_image.name)
+        return

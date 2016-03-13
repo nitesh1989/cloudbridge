@@ -12,7 +12,8 @@ import hashlib
 from retrying import retry
 
 from .resources import GCEKeyPair
-from .resources import GCEMachineImage
+# TODO: Import GCEMachineImage
+# from .resources import GCEMachineImage
 
 
 class GCESecurityService(BaseSecurityService):
@@ -193,7 +194,13 @@ class GCESecurityGroupService(BaseSecurityGroupService):
 class GCEComputeService(BaseComputeService):
 
     def __init__(self, provider):
+        # super(GCEComputeService, self).__init__(provider)
+        # self._image_svc = GCEImageService(self.provider)
         return
+
+    # @property
+    # def images(self):
+        # return self._images_svc
 
 
 class GCEImageService(BaseImageService):
@@ -211,6 +218,7 @@ class GCEImageService(BaseImageService):
         """
         Returns an image given its image
         image: string, Name of the image resource to return. (required)
+        eg: image-id="ubuntu-1404-trusty-v20160304"
         """
         try:
             image = self.gce_images.get(project=self.provider.project_name,
@@ -220,7 +228,6 @@ class GCEImageService(BaseImageService):
                 return image
         except Exception as e:
             print e.message, e.args
-
         return None
 
     def find(self, name, limit=None, marker=None):
@@ -229,6 +236,7 @@ class GCEImageService(BaseImageService):
         """
         images = self.gce_images.list(project=self.provider.project_name,
                                       maxResults=limit, pageToken=marker)
+        # TODO : GCEMachineImage casting is an issue.
         results = [GCEMachineImage(self.provider, image) for image in images
                    if name == image]
         return results
@@ -237,7 +245,6 @@ class GCEImageService(BaseImageService):
         """
         List all images.
         """
-        # TODO replace gce with self
         images = self.gce_images.list(project=self.provider.project_name,
                                       maxResults=limit, pageToken=marker)
         return images
